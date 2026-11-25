@@ -74,6 +74,21 @@ namespace FightingGame
             ReturnToMenu();
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (CurrentPhase != MatchPhase.Menu)
+                {
+                    ReturnToMenu();
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            }
+        }
+
         public void StartNewMatch()
         {
             StopActiveRoutine();

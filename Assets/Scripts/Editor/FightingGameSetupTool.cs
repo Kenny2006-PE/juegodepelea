@@ -44,6 +44,8 @@ namespace FightingGame.EditorTools
         private const string HorizontalSlashSpritePath = UISpritesDir + "/HorizontalSlash.png";
         private const string VignetteSpritePath = UISpritesDir + "/VignetteBackdrop.png";
         private const string ArenaScenePath = ScenesOutputDir + "/FightingArena.unity";
+        private const string BuildOutputDirectory = "Builds/TanjiroVsMadara";
+        private const string BuildExecutableName = "TanjiroVsMadara.exe";
 
         private struct UISpriteBundle
         {
@@ -287,6 +289,50 @@ namespace FightingGame.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ArenaScenePath);
             Debug.Log("<color=#33DD88>[FightingGameSetup] ¡Interfaz (Menú y HUD de Combate) rediseñada y guardada con éxito!</color>");
+        }
+
+        [MenuItem("Tools/Setup Fighting Game/6. Build Windows Executable", false, 25)]
+        public static void BuildWindowsExecutableMenuItem()
+        {
+            BuildStandaloneWindows();
+        }
+
+        public static void BuildStandaloneWindows()
+        {
+            EnsureSceneInBuildSettings(ArenaScenePath);
+
+            string fullBuildDir = Path.GetFullPath(BuildOutputDirectory);
+            if (Directory.Exists(fullBuildDir))
+            {
+                Directory.Delete(fullBuildDir, true);
+            }
+            Directory.CreateDirectory(fullBuildDir);
+
+            string exePath = Path.Combine(fullBuildDir, BuildExecutableName);
+            string[] scenes = new[] { ArenaScenePath };
+
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                locationPathName = exePath,
+                target = BuildTarget.StandaloneWindows64,
+                options = BuildOptions.None
+            };
+
+            Debug.Log($"[FightingGameSetup] Iniciando compilación de StandaloneWindows64 en: {exePath}");
+            UnityEditor.Build.Reporting.BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            UnityEditor.Build.Reporting.BuildSummary summary = report.summary;
+
+            if (summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)
+            {
+                Debug.Log($"<color=#33DD88>[FightingGameSetup] ¡Compilación exitosa! Tamaño total: {summary.totalSize} bytes en {exePath}</color>");
+            }
+            else
+            {
+                string errorMsg = $"[FightingGameSetup] Error durante la compilación: {summary.result} ({summary.totalErrors} errores)";
+                Debug.LogError(errorMsg);
+                throw new Exception(errorMsg);
+            }
         }
 
         // =====================================================================
